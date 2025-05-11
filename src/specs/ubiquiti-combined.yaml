@@ -1,0 +1,426 @@
+openapi: 3.1.0
+info:
+  title: Ubiquiti Combined API
+  version: 1.0.0
+  description: Combined API specification for all Ubiquiti products
+  contact:
+    name: Ubiquiti API Companion
+    url: https://github.com/yourusername/ubiquiti-api-companion
+
+servers:
+  - url: https://{controller}
+    description: Ubiquiti Controller
+    variables:
+      controller:
+        default: unifi.local
+        description: Hostname or IP of the Ubiquiti controller
+
+paths:
+  # ============= UniFi Network API =============
+  /network/api/login:
+    post:
+      tags:
+        - Network - Authentication
+      summary: Log in to the UniFi Network Controller
+      operationId: networkLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Username for the UniFi controller
+                password:
+                  type: string
+                  description: Password for the UniFi controller
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: '#/components/schemas/NetworkMeta'
+                  data:
+                    type: array
+                    items: {}
+        '401':
+          description: Unauthorized
+
+  /network/api/logout:
+    post:
+      tags:
+        - Network - Authentication
+      summary: Log out from the UniFi Network Controller
+      operationId: networkLogout
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+
+  /network/api/s/{site}/stat/device:
+    get:
+      tags:
+        - Network - Devices
+      summary: Get all devices
+      operationId: networkGetDevices
+      parameters:
+        - name: site
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Site name
+          example: default
+      responses:
+        '200':
+          description: List of devices
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: '#/components/schemas/NetworkMeta'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NetworkDevice'
+        '401':
+          description: Unauthorized
+
+  /network/api/s/{site}/stat/sta:
+    get:
+      tags:
+        - Network - Clients
+      summary: Get all clients
+      operationId: networkGetClients
+      parameters:
+        - name: site
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Site name
+          example: default
+      responses:
+        '200':
+          description: List of clients
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  meta:
+                    $ref: '#/components/schemas/NetworkMeta'
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NetworkClient'
+        '401':
+          description: Unauthorized
+
+  # ============= UniFi Protect API =============
+  /protect/api/auth/login:
+    post:
+      tags:
+        - Protect - Authentication
+      summary: Log in to the UniFi Protect NVR
+      operationId: protectLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Username for the UniFi Protect NVR
+                password:
+                  type: string
+                  description: Password for the UniFi Protect NVR
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Authentication token
+        '401':
+          description: Unauthorized
+
+  /protect/api/auth/logout:
+    post:
+      tags:
+        - Protect - Authentication
+      summary: Log out from the UniFi Protect NVR
+      operationId: protectLogout
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Unauthorized
+
+  /protect/proxy/protect/api/bootstrap:
+    get:
+      tags:
+        - Protect - Bootstrap
+      summary: Get bootstrap data
+      description: |
+        This endpoint returns all the data needed to initialize the UniFi Protect interface.
+        It includes information about cameras, events, users, and system settings.
+      operationId: protectGetBootstrap
+      responses:
+        '200':
+          description: Bootstrap data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtectBootstrap'
+        '401':
+          description: Unauthorized
+
+  /protect/proxy/protect/api/cameras/{id}/snapshot:
+    get:
+      tags:
+        - Protect - Cameras
+      summary: Get camera snapshot
+      description: Get a snapshot image from a camera
+      operationId: protectGetCameraSnapshot
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Camera ID
+      responses:
+        '200':
+          description: Camera snapshot
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Unauthorized
+        '404':
+          description: Camera not found
+
+components:
+  schemas:
+    # ============= UniFi Network API Schemas =============
+    NetworkMeta:
+      type: object
+      properties:
+        rc:
+          type: string
+          description: Result code
+          example: ok
+        msg:
+          type: string
+          description: Message
+        
+    NetworkDevice:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Device ID
+        mac:
+          type: string
+          description: MAC address
+        model:
+          type: string
+          description: Device model
+        name:
+          type: string
+          description: Device name
+        ip:
+          type: string
+          description: IP address
+        type:
+          type: string
+          description: Device type
+        adopted:
+          type: boolean
+          description: Whether the device is adopted
+        state:
+          type: integer
+          description: Device state (1 = connected, 0 = disconnected)
+        uptime:
+          type: integer
+          description: Uptime in seconds
+        version:
+          type: string
+          description: Firmware version
+        upgradable:
+          type: boolean
+          description: Whether the device can be upgraded
+        
+    NetworkClient:
+      type: object
+      properties:
+        _id:
+          type: string
+          description: Client ID
+        mac:
+          type: string
+          description: MAC address
+        ip:
+          type: string
+          description: IP address
+        name:
+          type: string
+          description: Client name
+        hostname:
+          type: string
+          description: Client hostname
+        is_wired:
+          type: boolean
+          description: Whether the client is wired
+        is_guest:
+          type: boolean
+          description: Whether the client is a guest
+        oui:
+          type: string
+          description: OUI (Organization Unique Identifier)
+        blocked:
+          type: boolean
+          description: Whether the client is blocked
+        last_seen:
+          type: integer
+          description: Last seen timestamp
+        rx_bytes:
+          type: integer
+          description: Received bytes
+        tx_bytes:
+          type: integer
+          description: Transmitted bytes
+    
+    # ============= UniFi Protect API Schemas =============
+    ProtectBootstrap:
+      type: object
+      properties:
+        cameras:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtectCamera'
+        nvr:
+          $ref: '#/components/schemas/ProtectNVR'
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProtectUser'
+        lastUpdateId:
+          type: string
+          description: ID of the last update
+
+    ProtectCamera:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Camera ID
+        name:
+          type: string
+          description: Camera name
+        type:
+          type: string
+          enum: [UVC, UBV, MICRO, FLEX, G3, G3_DOME, G3_MICRO, G3_FLEX, G3_INSTANT, G4_DOORBELL, G4_PRO, G4_BULLET]
+          description: Camera type
+        mac:
+          type: string
+          description: MAC address
+        ip:
+          type: string
+          description: IP address
+        state:
+          type: string
+          enum: [CONNECTED, DISCONNECTED, PENDING_ADOPTION]
+          description: Camera state
+        lastSeen:
+          type: integer
+          format: int64
+          description: Last seen timestamp
+        lastMotion:
+          type: integer
+          format: int64
+          description: Last motion timestamp
+        lastRing:
+          type: integer
+          format: int64
+          description: Last doorbell ring timestamp
+        isRecording:
+          type: boolean
+          description: Whether the camera is recording
+        isMotionDetectionEnabled:
+          type: boolean
+          description: Whether motion detection is enabled
+
+    ProtectNVR:
+      type: object
+      properties:
+        id:
+          type: string
+          description: NVR ID
+        name:
+          type: string
+          description: NVR name
+        mac:
+          type: string
+          description: MAC address
+        version:
+          type: string
+          description: Software version
+        firmwareVersion:
+          type: string
+          description: Firmware version
+        upSince:
+          type: integer
+          format: int64
+          description: Up since timestamp
+        lastSeen:
+          type: integer
+          format: int64
+          description: Last seen timestamp
+        isConnectedToCloud:
+          type: boolean
+          description: Whether the NVR is connected to the cloud
+
+    ProtectUser:
+      type: object
+      properties:
+        id:
+          type: string
+          description: User ID
+        firstName:
+          type: string
+          description: First name
+        lastName:
+          type: string
+          description: Last name
+        email:
+          type: string
+          description: Email address
+        role:
+          type: string
+          enum: [admin, user, view, restricted]
+          description: User role

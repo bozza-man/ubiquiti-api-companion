@@ -1,0 +1,55 @@
+# Source code
+src/
+
+# Examples
+examples/
+
+# Tests
+__tests__/
+*.spec.ts
+*.test.ts
+test/
+coverage/
+.nyc_output/
+
+# Git and GitHub files
+.git/
+.github/
+.gitignore
+.gitattributes
+README.github.md
+
+# Build tools
+tsconfig.json
+.eslintrc.js
+.eslintignore
+.prettierrc
+.prettierignore
+rollup.config.js
+babel.config.js
+jest.config.js
+
+# Editor configs
+.vscode/
+.idea/
+*.sublime-*
+.editorconfig
+
+# Scripts
+scripts/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Misc
+.DS_Store
+Thumbs.db
+*.tgz
+.env*
+.travis.yml
+appveyor.yml
+CHANGELOG.md
+CONTRIBUTING.md
+FUNDING.yml

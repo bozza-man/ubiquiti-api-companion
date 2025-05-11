@@ -1,0 +1,23 @@
+{
+  "devices": [
+    {
+      "type": "network",
+      "host": "unifi.example.com",
+      "username": "admin",
+      "password": "your-password-here",
+      "port": "443"
+    },
+    {
+      "type": "protect",
+      "host": "protect.example.com",
+      "username": "admin",
+      "password": "your-password-here",
+      "port": "443"
+    }
+  ],
+  "checkIntervalMinutes": 1440,
+  "knownFirmware": {
+    "network": [],
+    "protect": []
+  }
+}
